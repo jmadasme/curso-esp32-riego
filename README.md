@@ -12,8 +12,6 @@ Cada carpeta conserva el contenido original de su etapa, sin `.git`, dependencia
 instaladas ni binarios pesados. La documentación de operación y de código está en
 [`docs/`](docs/), y el sitio del proyecto en [`docs/index.html`](docs/index.html).
 
-> **Nota de preservación:** se removieron credenciales, claves o tokens detectados en 5 archivo(s) de esta familia. Los ejemplos y plantillas seguras se conservan.
-
 ## Índice de versiones
 
 | Versión | Qué aporta | Archivos |
@@ -35,6 +33,64 @@ arduino-cli compile --fqbn esp32:esp32:esp32s3 .
 
 El portal cautivo y la API de clima requieren configuración local. La clave de OpenWeatherMap no se incluye.
 
+<!-- ficha -->
+## Ficha de evaluación
+
+**Madurez global: 4.2/5**
+
+| Criterio | Nota | Evidencia |
+|---|---:|---|
+| Madurez | 3/5 | Código completo con persistencia, portal y clima; sin OTA, sin reset y con una única zona. |
+| Reproducibilidad | 4/5 | Sketch y FQBN declarados, dependencias acotadas a ArduinoJson; la clave de OpenWeatherMap debe aportarse. |
+| Documentación | 5/5 | Doce capítulos de curso, datasheet de usuario, explicación del código y un troubleshooting de 351 líneas. |
+| Honestidad de límites | 5/5 | Enumera limitaciones de memoria, zona horaria fija, HTTP sin TLS y contraseña de AP débil. |
+| Valor demostrativo | 5/5 | Es material docente ejecutable: cada componente tiene explicación, laboratorio y ejercicios asociados. |
+| Facilidad de despliegue | 3/5 | Compila con arduino-cli o IDE y un solo archivo de configuración; exige editar WiFi y API antes de cargar. |
+
+Proyecto docente completo y funcional para riego doméstico. La calidad de la documentación supera al alcance del firmware, que está deliberadamente acotado a una sola zona.
+
+## Lo que no funcionó
+
+### Curso_ESP32_Riego — Una sola zona de riego
+
+La versión publicada controla un único relé. Ampliar a varias zonas exige modificar RelayControl.h, sumar configuración en EEPROM y revisar que la estructura no supere los 512 bytes disponibles. El FAQ lo declara de forma explícita y no existe soporte multizona en el código actual.
+
+### Curso_ESP32_Riego — Sin OTA ni reset de fábrica
+
+Actualizar el firmware requiere cable USB, y no hay un botón de reset en la interfaz web: recuperar los valores por defecto implica recompilar o cargar un sketch temporal que llame a clearConfig(). Ambas ausencias están reconocidas en el documento de troubleshooting.
+
+### Curso_ESP32_Riego — Desborde de millis a los 50 días
+
+El temporizador del relé se apoya en millis(), que se desborda alrededor de los 50 días de encendido continuo. La documentación recomienda reiniciar el equipo cada 30 días en lugar de corregir la comparación de tiempos en el código, de modo que la limitación se mitiga con una tarea manual.
+
+### Curso_ESP32_Riego — Modo seguro que riega a ciegas
+
+Si la API de clima falla por falta de internet, clave inválida o timeout, el sistema asume que no lloverá y ejecuta el riego. La decisión prioriza no dejar el cultivo sin agua, pero convierte un error de red en consumo innecesario.
+
+## Preguntas típicas
+
+**¿Necesito una app?**
+
+No. El portal cautivo y la web se abren desde el navegador del teléfono.
+
+**¿Qué pasa si no hay Internet?**
+
+El riego por horario sigue funcionando; la decisión por lluvia se omite.
+
+**¿Cuántos sectores controla?**
+
+Un relé en la versión publicada. Ampliar requiere ajustar el código y el hardware.
+
+**¿Sirve para hydroponia?**
+
+No está diseñado para eso: es riego por horario, no control de nutrientes.
+
+**¿Puedo usar ESP32 clásico?**
+
+Sí, revisando pines y el FQBN; el proyecto apunta a ESP32-S3.
+
+<!-- /ficha -->
+
 ## Documentación
 
 - [`docs/datasheet.md`](docs/datasheet.md) — instalación, operación y límites.
@@ -42,9 +98,9 @@ El portal cautivo y la API de clima requieren configuración local. La clave de 
 - [`docs/REFERENCES.md`](docs/REFERENCES.md) — estándares, librerías y fuentes.
 - [`docs/index.html`](docs/index.html) — página del proyecto (GitHub Pages).
 
-## Alcance y honestidad
+## El proyecto en detalle
 
-## 🚀 Riego Inteligente ESP32-S3
+### 🚀 Riego Inteligente ESP32-S3
 
 <div align="center">
 
